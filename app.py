@@ -94,10 +94,13 @@ class App(ctk.CTk):
     def mostrar_senha_cadastro(self):
         if not self.senha_visivel_cadastro:
             self.senha_cadastro_entry.configure(show="")
+            self.confirma_senha_entry.configure(show="")
             self.senha_visivel_cadastro = True
         else:
             self.senha_cadastro_entry.configure(show="*")
+            self.confirma_senha_entry.configure(show="*")
             self.senha_visivel_cadastro = False
+
         
     def voltar_para_login(self):
         # Limpa o frame de cadastro
