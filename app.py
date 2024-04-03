@@ -1,5 +1,4 @@
 import customtkinter as ctk
-from tkinter import PhotoImage
 
 class App(ctk.CTk):
     def __init__(self):
@@ -14,19 +13,13 @@ class App(ctk.CTk):
         self.resizable(False, False)    
 
     def tela_de_login(self):
-        # Trabalhando com as imagens
-        self.img = PhotoImage(file="login.png")
-        self.img = self.img.subsample(6,6)
-        self.lb_img = ctk.CTkLabel(self, image=self.img)
-        self.lb_img.grid(row=1, column=0, padx=10)
-        
-        # Titulo da Plataforma
-        self.title = ctk.CTkLabel(self, text="Faça o seu login ou Cadastre! \nPara ter acesso na plataforma", font=("Century Gothic bold", 14))
-        self.title.grid(row=0, column=0, pady=10, padx=10)
-        
         # Criar a frame do formulario de login
-        self.frame_login = ctk.CTkFrame(self, width=350, height=380)
-        self.frame_login.place(x=350, y=10)
+        largura_frame = 350
+        altura_frame = 380
+        x_frame = (self.winfo_width() - largura_frame) // 2
+        y_frame = (self.winfo_height() - altura_frame) // 2 + 20  # Adiciona 20 pixels à posição vertical
+        self.frame_login = ctk.CTkFrame(self, width=largura_frame, height=altura_frame)
+        self.frame_login.place(x=x_frame, y=y_frame)
   
         # Colocando widget dentro do frame - formulario de login
         self.lbtitle = ctk.CTkLabel(self.frame_login, text="Faça seu Login", font=("Century Gothic bold", 22))
@@ -35,7 +28,7 @@ class App(ctk.CTk):
         self.username_login_entry = ctk.CTkEntry(self.frame_login, width=300, placeholder_text="Seu nome de usuário...", font=("Century Gothic bold", 16), corner_radius=15, border_color= "#005")
         self.username_login_entry.grid(row=1, column=0, pady=10, padx=10)
   
-        self.senha_login_entry = ctk.CTkEntry(self.frame_login, width=300, placeholder_text="Seu nome de usuário...", font=("Century Gothic bold", 16), corner_radius=15, border_color= "#005")
+        self.senha_login_entry = ctk.CTkEntry(self.frame_login, width=300, placeholder_text="Sua senha...", font=("Century Gothic bold", 16), corner_radius=15, border_color= "#005")
         self.senha_login_entry.grid(row=2, column=0, pady=10, padx=10)
     
         self.ver_senha = ctk.CTkCheckBox(self.frame_login, text="Clique para ver a senha", font=("Century Gothic bold", 12), corner_radius=20)
