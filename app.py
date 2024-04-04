@@ -38,9 +38,11 @@ class BackEnd():
             else: 
                 self.conn.commit()
                 messagebox.showinfo(title="Sistema de login", message="Parabéns \n{self.username_cadastro}\n Os seus dados foram cadastrados com sucesso")
-                
+                self.desconecta_db()
+                self.limpa_entry_cadastro()
         except:
             messagebox.showerror(title="Sistema de login", message="Erro no processamento do seu cadastro!\nPor favor tente novamente!")
+            self.desconecta_db()
         
         
     def cadastrar_usuario(self):
@@ -59,7 +61,27 @@ class BackEnd():
         print("Dados cadastrados com sucesso!")
         self.desconecta_db()
 
-
+    def verifica_login(self):
+        self.username_login = self.username_login_entry.get()
+        self.senha_login = self.senha_login_entry.get()
+        
+        self.conecta_db()
+        
+        self.cursor.execute("""SELECT * FROM Usuarios WHERE (Username = ? AND Senha = ?)""", (self.username_login, self.senha_login))
+        
+        self.verifica_dados = self.cursor.fetchone() #Percorrendo na tabela usuarios
+        
+        try: 
+            if (self.username_login == "" or self.senha_login == ""):
+                messagebox.showwarning(title="Sistema de login", message="Porfavor preencha todos os campos!")
+            elif (self.username_login in self.verifica_dados and self.senha_login in self.verifica_dados):
+                messagebox.showinfo(title="Sistema de Login", message=f"Parabens {self.username_login}\nLogin feito com sucesso!")
+                self.desconecta_db()
+                self.limpa_entry_login()
+        except:
+            messagebox.showerror(title="Sistema de login", message="ERRO!!!\n Dados não encotrados no sistema. Porfavor verifique os seus dados ou cadastre-se no nosso sistema")
+            self.desconecta_db()
+        
 class App(ctk.CTk, BackEnd):
     def __init__(self):
         super().__init__()
@@ -96,7 +118,7 @@ class App(ctk.CTk, BackEnd):
         self.ver_senha_login = ctk.CTkCheckBox(self.frame_login, text="Clique para ver a senha", font=("Century Gothic bold", 12), corner_radius=20, command=self.mostrar_senha_login)
         self.ver_senha_login.grid(row=3, column=0, pady=10, padx=10)
         
-        self.btn_login = ctk.CTkButton(self.frame_login, width=30, text="Fazer Login".upper(), font=("Century Gothic bold", 14), corner_radius=15)
+        self.btn_login = ctk.CTkButton(self.frame_login, width=30, text="Fazer Login".upper(), font=("Century Gothic bold", 14), corner_radius=15, command=self.verifica_login)
         self.btn_login.grid(row=4, column=0, pady=10, padx=10)
         
         self.span = ctk.CTkLabel(self.frame_login, text="Se você não tem conta,\nclique no botão abaixo para cadastrar!", font=("Century Gothic", 10))
