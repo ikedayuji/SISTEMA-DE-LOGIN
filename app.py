@@ -61,20 +61,20 @@ class BackEnd():
         self.desconecta_db()
 
     def verifica_login(self):
-        self.username_login = self.username_login_entry.get()
+        self.email_login = self.email_login_entry.get()
         self.senha_login = self.senha_login_entry.get()
         
         self.conecta_db()
         
-        self.cursor.execute("""SELECT * FROM Usuarios WHERE (Username = ? AND Senha = ?)""", (self.username_login, self.senha_login))
+        self.cursor.execute("""SELECT * FROM Usuarios WHERE (Email = ? AND Senha = ?)""", (self.email_login, self.senha_login))
         
-        self.verifica_dados = self.cursor.fetchone() #Percorrendo na tabela usuarios
+        self.verifica_dados = self.cursor.fetchone()
         
-        try: 
-            if (self.username_login == "" or self.senha_login == ""):
+        try:
+            if (self.email_login == "" or self.senha_login == ""):
                 messagebox.showwarning(title="Sistema de login", message="Por favor preencha todos os campos!")
-            elif (self.username_login in self.verifica_dados and self.senha_login in self.verifica_dados):
-                messagebox.showinfo(title="Sistema de Login", message=f"Olá {self.username_login}\nSeu login foi feito com sucesso!")
+            elif self.verifica_dados:
+                messagebox.showinfo(title="Sistema de Login", message=f"Olá {self.verifica_dados[1]}\nSeu login foi feito com sucesso!")  # 1 é o índice da coluna Username
                 self.desconecta_db()
                 self.limpa_entry_login()
         except:
@@ -113,8 +113,8 @@ class App(ctk.CTk, BackEnd):
         self.lbtitle = ctk.CTkLabel(self.frame_login, text="Faça seu Login", font=("Century Gothic bold", 22))
         self.lbtitle.place(relx=0.5, rely=0.1, anchor="center")
         
-        self.username_login_entry = ctk.CTkEntry(self.frame_login, width=300, placeholder_text="Seu nome de usuário...", font=("Century Gothic bold", 16), corner_radius=15, border_color= "#005")
-        self.username_login_entry.place(relx=0.5, rely=0.25, anchor="center")
+        self.email_login_entry = ctk.CTkEntry(self.frame_login, width=300, placeholder_text="Seu email...", font=("Century Gothic bold", 16), corner_radius=15, border_color= "#005")
+        self.email_login_entry.place(relx=0.5, rely=0.25, anchor="center")
   
         self.senha_login_entry = ctk.CTkEntry(self.frame_login, width=300, placeholder_text="Sua senha...", font=("Century Gothic bold", 16), corner_radius=15, border_color= "#005", show="*")
         self.senha_login_entry.place(relx=0.5, rely=0.35, anchor="center")
@@ -172,7 +172,7 @@ class App(ctk.CTk, BackEnd):
         self.confirma_senha_entry.delete(0, END)
         
     def limpa_entry_login(self):
-        self.username_login_entry.delete(0, END)
+        self.email_login_entry.delete(0, END)
         self.senha_login_entry.delete(0, END)
 
 if __name__ == "__main__":
