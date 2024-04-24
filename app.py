@@ -119,13 +119,10 @@ class App(ctk.CTk, BackEnd):
         self.senha_login_entry = ctk.CTkEntry(self.frame_login, width=300, placeholder_text="Sua senha...", font=("Century Gothic bold", 16), corner_radius=15, border_color= "#005", show="*")
         self.senha_login_entry.place(relx=0.5, rely=0.35, anchor="center")
         
-        self.btn_login = ctk.CTkButton(self.frame_login, width=30, text="Fazer Login".upper(), font=("Century Gothic bold", 14), corner_radius=15, command=self.verifica_login)
-        self.btn_login.place(relx=0.5, rely=0.45, anchor="center")
-        
-        self.span = ctk.CTkLabel(self.frame_login, text="Se você não tem conta,\nclique no botão abaixo para cadastrar!", font=("Century Gothic", 12))
-        self.span.place(relx=0.5, rely=0.55, anchor="center")
+        self.btn_login = ctk.CTkButton(self.frame_login, width=30, text="Login".upper(), font=("Century Gothic bold", 14), corner_radius=15, command=self.verifica_login)
+        self.btn_login.place(relx=0.5, rely=0.5, anchor="center")
 
-        self.btn_cadastro = ctk.CTkButton(self.frame_login, width=300, fg_color="green", hover_color="#050", text="Fazer Cadastro".upper(), font=("Century Gothic bold", 14), corner_radius=15, command=self.tela_de_cadastro)
+        self.btn_cadastro = ctk.CTkButton(self.frame_login, width=300, fg_color="green", hover_color="#050", text="Cadastre-se".upper(), font=("Century Gothic bold", 14), corner_radius=15, command=self.tela_de_cadastro)
         self.btn_cadastro.place(relx=0.5, rely=0.65, anchor="center")
         
     def tela_de_cadastro(self):
