@@ -4,18 +4,15 @@ import sqlite3
 from tkinter import messagebox
 
 class BackEnd():
-    def conecta_db(self):
+    def __init__(self):
         self.conn = sqlite3.connect("Sistema_cadastros.db")
         self.cursor = self.conn.cursor()
-        print("Banco de dados conectado")
-        
-    def desconecta_db(self):
+        self.cria_tabela()
+
+    def __del__(self):
         self.conn.close()
-        print("Banco de dados desconectado")
-        
+
     def cria_tabela(self):
-        self.conecta_db()
-        
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS Usuarios (
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,68 +22,53 @@ class BackEnd():
             Confirma_Senha TEXT NOT NULL
              )
         """)
-        
+        self.conn.commit()
+
+    def cadastrar_usuario(self, username, email, senha, confirma_senha):
         try:
-            if (self.username_cadastro == "" or self.email_cadastro=="" or self.senha_cadastro=="" or self.confirma_senha_cadastro==""):
+            if (username == "" or email=="" or senha=="" or confirma_senha==""):
                 messagebox.showerror(title="Sistema de login", message="ERRO!\nPor favor preencha todos os campos!")
-            elif (len(self.username_cadastro) < 4):
+            elif (len(username) < 4):
                 messagebox.showwarning(title="Sistema de Login", message="O nome do usuário deve ter pelo menos 4 caracteres.")
-            elif (len(self.senha_cadastro) < 4):
+            elif (len(senha) < 4):
                 messagebox.showwarning(title="Sistema de Login", message="A senha deve ter pelo menos 4 caracteres.")
-            elif (self.senha_cadastro != self.confirma_senha_cadastro):
+            elif (senha != confirma_senha):
                 messagebox.showerror(title="Sistema de login", message="ERRO!\nAs senhas que você colocou não estão iguais, coloque novamente as senhas iguais.")
             else: 
+                self.cursor.execute("""
+                    INSERT INTO Usuarios (Username, Email, Senha, Confirma_Senha)
+                    VALUES (?, ?, ?, ?)""", (username, email, senha, confirma_senha))
+
                 self.conn.commit()
-                messagebox.showinfo(title="Sistema de login", message="\n{self.username_cadastro}\n Os seus dados foram cadastrados com sucesso")
-                self.desconecta_db()
-                self.limpa_entry_cadastro()
-        except:
-            self.desconecta_db()
-        
-        
-    def cadastrar_usuario(self):
-        self.username_cadastro = self.username_cadastro_entry.get()
-        self.email_cadastro = self.email_cadastro_entry.get()
-        self.senha_cadastro = self.senha_cadastro_entry.get()
-        self.confirma_senha_cadastro = self.confirma_senha_entry.get()
-        
-        self.conecta_db()
-        
-        self.cursor.execute("""
-            INSERT INTO Usuarios (Username, Email, Senha, Confirma_Senha)
-            VALUES (?, ?, ?, ?)""", (self.username_cadastro, self.email_cadastro, self.senha_cadastro, self.confirma_senha_cadastro))
+                messagebox.showinfo(title="Sistema de login", message=f"\n{username}\n Os seus dados foram cadastrados com sucesso")
+        except Exception as e:
+            messagebox.showerror(title="Sistema de login", message=f"Erro ao cadastrar: {e}")
 
-        self.conn.commit()
-        print("Dados cadastrados com sucesso!")
-        self.desconecta_db()
-
-    def verifica_login(self):
-        self.email_login = self.email_login_entry.get()
-        self.senha_login = self.senha_login_entry.get()
-        
-        self.conecta_db()
-        
-        self.cursor.execute("""SELECT * FROM Usuarios WHERE (Email = ? AND Senha = ?)""", (self.email_login, self.senha_login))
-        
-        self.verifica_dados = self.cursor.fetchone()
-        
+    def verifica_login(self, email, senha):
         try:
-            if (self.email_login == "" or self.senha_login == ""):
+            if (email == "" or senha == ""):
                 messagebox.showwarning(title="Sistema de login", message="Por favor preencha todos os campos!")
-            elif self.verifica_dados:
-                messagebox.showinfo(title="Sistema de Login", message=f"Olá {self.verifica_dados[1]}\nSeu login foi feito com sucesso!")  # 1 é o índice da coluna Username
-                self.desconecta_db()
-                self.limpa_entry_login()
-        except:
-            messagebox.showerror(title="Sistema de login", message="ERRO!!!\n Dados não encontrados no sistema. Por favor verifique os seus dados ou cadastre-se no nosso sistema")
-            self.desconecta_db()
-        
-class App(ctk.CTk, BackEnd):
+            else:
+                self.cursor.execute("""SELECT * FROM Usuarios WHERE (Email = ? AND Senha = ?)""", (email, senha))
+                verifica_dados = self.cursor.fetchone()
+                
+                if verifica_dados:
+                    messagebox.showinfo(title="Sistema de Login", message=f"Olá {verifica_dados[1]}\nSeu login foi feito com sucesso!")
+                    return True
+                else:
+                    messagebox.showerror(title="Sistema de login", message="ERRO!!!\n Dados não encontrados no sistema. Por favor verifique os seus dados ou cadastre-se no nosso sistema")
+                    return False
+        except Exception as e:
+            messagebox.showerror(title="Sistema de login", message=f"Erro ao verificar login: {e}")
+            return False
+
+class App(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.configuracoes_da_janela_inicial()
+        self.backend = BackEnd()  # Instancia o backend
         self.tela_de_login()
-    
+
     # Configurando a janela principal    
     def configuracoes_da_janela_inicial(self):
         largura_monitor = self.winfo_screenwidth()
@@ -101,9 +83,8 @@ class App(ctk.CTk, BackEnd):
         self.geometry(f"{largura_janela}x{altura_janela}+{x_janela}+{y_janela}")
         self.title("Tela de Login")
         self.resizable(True, True)    
-        self.cria_tabela()
         self.update_idletasks()  # Atualiza a geometria da janela antes de exibir
-    
+
     def tela_de_login(self):
         # Criar a frame do formulario de login
         self.frame_login = ctk.CTkFrame(self, width=400, height=450)
@@ -124,10 +105,10 @@ class App(ctk.CTk, BackEnd):
 
         self.btn_cadastro = ctk.CTkButton(self.frame_login, width=300, fg_color="green", hover_color="#050", text="Cadastre-se".upper(), font=("Century Gothic bold", 14), corner_radius=15, command=self.tela_de_cadastro)
         self.btn_cadastro.place(relx=0.5, rely=0.65, anchor="center")
-        
+
     def tela_de_cadastro(self):
-        #Remover o formulario de login
-        self.frame_login.place_forget()
+        #Limpa o formulário de login
+        self.limpa_entry_login()
     
         #Frame de formulario de cadastro
         self.frame_cadastro = ctk.CTkFrame(self, width=400, height=450)
@@ -157,6 +138,8 @@ class App(ctk.CTk, BackEnd):
         self.btn_login_back.place(relx=0.5, rely=0.75, anchor="center")
         
     def voltar_para_login(self):
+        #Limpa o formulário de cadastro
+        self.limpa_entry_cadastro()
         # Limpa o frame de cadastro
         self.frame_cadastro.place_forget()
         # Exibe o frame de login novamente
@@ -171,6 +154,55 @@ class App(ctk.CTk, BackEnd):
     def limpa_entry_login(self):
         self.email_login_entry.delete(0, END)
         self.senha_login_entry.delete(0, END)
+
+    def cadastrar_usuario(self):
+        username = self.username_cadastro_entry.get()
+        email = self.email_cadastro_entry.get()
+        senha = self.senha_cadastro_entry.get()
+        confirma_senha = self.confirma_senha_entry.get()
+
+        self.backend.cadastrar_usuario(username, email, senha, confirma_senha)
+
+    def verifica_login(self):
+        email = self.email_login_entry.get()
+        senha = self.senha_login_entry.get()
+
+        if self.backend.verifica_login(email, senha):
+            # Destrói a tela de login e cadastro
+            self.frame_login.destroy()
+            if hasattr(self, "frame_cadastro"):
+                self.frame_cadastro.destroy()
+            # Abre a TelaPrincipal
+            self.abrir_tela_principal()
+        else:
+            messagebox.showerror(title="Sistema de login", message="ERRO!!!\n Dados não encontrados no sistema. Por favor verifique os seus dados ou cadastre-se no nosso sistema")
+    
+    def abrir_tela_principal(self):
+        #Limpa o formulário de login
+        self.limpa_entry_login()
+        #Cria a nova janela principal
+        self.tela_principal = TelaPrincipal(self)
+        self.tela_principal.lift()
+
+class TelaPrincipal(ctk.CTk):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.configuracoes_da_janela_principal()
+
+    def configuracoes_da_janela_principal(self):
+        largura_monitor = self.winfo_screenwidth()
+        altura_monitor = self.winfo_screenheight()
+        
+        largura_janela = 500
+        altura_janela = 600
+        
+        x_janela = (largura_monitor - largura_janela) // 2
+        y_janela = (altura_monitor - altura_janela) // 2
+        
+        self.geometry(f"{largura_janela}x{altura_janela}+{x_janela}+{y_janela}")
+        self.title("Tela Principal")
+        self.resizable(True, True)    
+        self.update_idletasks()  # Atualiza a geometria da janela antes de exibir
 
 if __name__ == "__main__":
     app = App()
